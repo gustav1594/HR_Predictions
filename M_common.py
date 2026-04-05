@@ -5,173 +5,32 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from tqdm import tqdm
+import os
+import tomli
+from os.path import join, dirname
+from dotenv import load_dotenv
+import time
+from functools import wraps
+from selenium.common.exceptions import TimeoutException, StaleElementReferenceException
 
 ###########################################################################
 # 共通定数
 ###########################################################################
-# 説明変数（１～６R用）
-features_1 = [
-    'actual_weight',            # 実重量
-    'declared_horse_weight',    # 馬体重
-    'updown',                   # 増減
-    'draw',                     # 枠番
-    'track',                    # コースタイプ
-    'jockey_ave_rank',          # 騎手平均順位
-    'trainer_ave_rank',         # 調教師平均順位
-    'recent_ave_rank',          # 最新nレース平均順位
-    'race_distance',            # レース距離
-    'training_point',           # 調教タイム
-    'ped_point',                # 血統指数
-    'breeder_point',            # 生産者指数
-    'climate',                  # 気候適性
-    'running_style'             # 脚質
-]
+# 環境変数ファイルを読み込む
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
 
-features_2 = [
-    'actual_weight',            # 実重量
-    'declared_horse_weight',    # 馬体重
-    'updown',                   # 増減
-    'draw',                     # 枠番
-    'CC_CD_point',              # 対象競馬場の同距離レース実績
-    'CD_point',                 # 同距離レース実績
-    'SD_point',                 # 短距離レース実績
-    'LD_point',                 # 長距離レース実績
-    'training_point',           # 調教タイム
-    'climate',                  # 気候適性
-    'running_style'             # 脚質
-]
+# settings.toml を読み込む
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CONFIG_PATH = os.path.join(BASE_DIR, "settings.toml")
+with open(CONFIG_PATH, "rb") as f:
+    _config = tomli.load(f)
 
-features_3 = [
-    'CC_CD_point',              # 対象競馬場の同距離レース実績
-    'CD_point',                 # 同距離レース実績
-    'training_point',           # 調教タイム
-]
 
-features_4 = [
-    'timeindex_ave_nor',        # スピード指数５レース平均（正規化）
-    'condition_deviation_nor',  # 調子偏差値（正規化）
-]
+# レース開催日を設定
+# race_day_config = _config["race_day"]
+PLACES = _config["target"]["places"]
 
-# ユーザー情報
-USER = 'xxxx@gmail.com'
-PASS = 'XXXXX'
-login_info = {
-    "login_id":USER,
-    "pswd":PASS
-}
-
-# 競馬場
-SAPPORO    = ['1']    # 札幌
-HAKODATE   = ['2']    # 函館
-HUKUSHIMA  = ['3']    # 福島
-NIIGATA    = ['4']    # 新潟
-TOKYO      = ['5']    # 東京
-NAKAYAMA   = ['6']    # 中山
-CHUKYO     = ['7']    # 中京
-KYOTO      = ['8']   # 京都
-HANSIN     = ['9']    # 阪神
-KOKURA     = ['10']   # 小倉
-
-# 競馬場の組み合わせ
-#PLACES = [TOKYO, KYOTO,NIIGATA]
-PLACES = [HANSIN]
-
-# 回数とレース日を取得
-def get_DAY(place):
-    if place == NAKAYAMA:
-        return ['5'], ['1', '2']
-    elif place == CHUKYO:
-        return ['4'], ['1', '2']
-    elif place == TOKYO:
-        return ['4'], ['5', '6', '7', '8']
-    elif place == KOKURA:
-        return ['3'], ['5', '6', '7', '8']
-    elif place == HANSIN:
-        return ['1'], ['10']
-    elif place == HUKUSHIMA:
-        return ['3'], ['5', '6']
-    elif place == NIIGATA:
-        return ['4'], ['5', '6', '7', '8']
-    elif place == KYOTO:
-        return ['5'], ['5', '6', '7', '8']
-    elif place == SAPPORO:
-        return '2', ['5', '6', '7', '8']
-    elif place == HAKODATE:
-        return ['1'], ['6', '7', '8', '9', '10', '11', '12']
-
-# レースデータのカラム
-columns = [
-    '日付',
-    'レースID',
-    'レース名',
-    '競馬場',
-    '出走頭数',
-    '着順',
-    '枠番',
-    '馬番',
-    '馬名',
-    '性齢',
-    '斤量',
-    '騎手',
-    'タイム',
-    '着差',
-    '単勝',
-    'コーナー通過順',
-    '脚質',
-    '人気',
-    '馬体重',
-    '増減',
-    '調教師',
-    '距離',
-    'タイプ',
-    '状態',
-    'クラス',
-    '発走時刻',
-    '気温',
-    '馬ID',
-    '騎手ID',
-    '調教師ID',
-    '調教タイム',
-    '調教評価',
-    '調教コース',
-    '調教指数',
-    '同コース同距離1着',
-    '同コース同距離2着',
-    '同コース同距離3着',
-    '同コース同距離着外',
-    '同距離1着',
-    '同距離2着',
-    '同距離3着',
-    '同距離着外',
-    '短距離1着',
-    '短距離2着',
-    '短距離3着',
-    '短距離着外',
-    '長距離1着',
-    '長距離2着',
-    '長距離3着',
-    '長距離着外',
-    '同コース同距離実績指数',
-    '同距離指数',
-    '短距離指数',
-    '長距離指数',
-    'タイム指数MAX',
-    'タイム指数平均',
-    'タイム指数距離MAX',
-    'タイム指数コースMAX',
-    '調子偏差値',
-    '種牡馬ID',
-    '種牡馬名',
-    '種牡馬指数',
-    '母父ID',
-    '母父名',
-    '母父指数',
-    '血統指数',
-    '生産者ID',
-    '生産者名',
-    '生産者指数',
-    '気候適性'
-]
 
 ###########################################################################
 # 共有関数
@@ -183,15 +42,52 @@ def get_url(type):
     elif type == 'new':
         return 'https://race.netkeiba.com/race/shutuba.html?race_id='
 
+
+# 回数とレース日を取得
+def get_target_race_schedules():
+    result = []
+
+    for place_name in _config["target"]["places"]:
+        place_code = _config["race"][place_name]
+        pairs = _config["race_pair"][place_name]["pairs"]
+
+        result.append({
+            "place_name": place_name,
+            "place_code": place_code,
+            "pairs": pairs,
+        })
+
+    return result
+
+
 # レースIDリスト作成
-def get_RaceList(y_start, y_end, place, kai, day, r):
+def get_target_race_id_list(y_start, y_end, r_start=1, r_end=12):
+    schedules = get_target_race_schedules()
+
     id_list = []
-    years = list(range(y_start, y_end + 1))
-    for years, place, kai, day, r in product(years, place, kai, day, r):
-        id = str(years).zfill(4) + str(place).zfill(2) + str(kai).zfill(2) \
-                  + str(day).zfill(2) + str(r).zfill(2)
-        id_list.append(id)
+
+    for schedule in schedules:
+        place_list = schedule["place_code"]
+        pairs = schedule["pairs"]
+
+        for year in range(y_start, y_end + 1):
+            for place in place_list:
+                for pair in pairs:
+                    kai = pair["kaisu"]
+                    day = pair["day"]
+
+                    for r in range(r_start, r_end + 1):
+                        race_id = (
+                            str(year).zfill(4)
+                            + str(place).zfill(2)
+                            + str(kai).zfill(2)
+                            + str(day).zfill(2)
+                            + str(r).zfill(2)
+                        )
+                        id_list.append(race_id)
+
     return id_list
+
 
 # 日付変換（yyyy年mm月dd日 → yyyymmdd）
 def conv_date(text):
@@ -534,3 +430,60 @@ def get_temp_new(place, hmin):
     temp = df.loc[4, column]
 
     return float(temp)
+
+# 2026.3.26追加
+###########################################################################
+# リトライ処理
+###########################################################################
+def get_with_retry(session, url, headers=None, timeout=10.0, max_retries=5, wait_seconds=1):
+    last_exception = None
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = session.get(url, timeout=timeout, headers=headers)
+            if session is None:
+                raise RuntimeError("session not initialized")
+            response.raise_for_status()
+            return response
+
+        except (requests.exceptions.Timeout,
+                requests.exceptions.ConnectionError,
+                requests.exceptions.RequestException) as e:
+            last_exception = e
+
+            if attempt < max_retries:
+                time.sleep(wait_seconds)
+            else:
+                print(f"通信失敗: {url} / {type(e).__name__}: {e}")
+                raise
+
+    raise last_exception
+
+# 2026.3.26追加
+###########################################################################
+# Seleniumデコレータ対応
+###########################################################################
+def retry_on_selenium_error(max_retries=5, wait_seconds=1):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            last_exception = None
+
+            for attempt in range(1, max_retries + 1):
+                try:
+                    return func(*args, **kwargs)
+
+                except (TimeoutException, StaleElementReferenceException) as e:
+                    last_exception = e
+
+                    if attempt < max_retries:
+                        time.sleep(wait_seconds)
+                    else:
+                        print(f"{func.__name__} failed: {type(e).__name__}: {e}")
+                        raise
+
+            raise last_exception
+
+        return wrapper
+    return decorator
+
