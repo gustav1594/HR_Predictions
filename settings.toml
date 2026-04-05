@@ -1,0 +1,173 @@
+[race]
+SAPPORO    = ['1']    # 札幌
+HAKODATE   = ['2']    # 函館
+HUKUSHIMA  = ['3']    # 福島
+NIIGATA    = ['4']    # 新潟
+TOKYO      = ['5']    # 東京
+NAKAYAMA   = ['6']    # 中山
+CHUKYO     = ['7']    # 中京
+KYOTO      = ['8']    # 京都
+HANSIN     = ['9']    # 阪神
+KOKURA     = ['10']   # 小倉
+
+[target]
+places = ["HANSIN"]
+
+[[race_pair.HANSIN.pairs]]
+kaisu = "1"
+day = "10"
+
+[[race_pair.TOKYO.pairs]]
+kaisu = "4"
+day = "5"
+
+[[race_pair.TOKYO.pairs]]
+kaisu = "4"
+day = "6"
+
+[[race_pair.TOKYO.pairs]]
+kaisu = "4"
+day = "7"
+
+[[race_pair.TOKYO.pairs]]
+kaisu = "4"
+day = "8"
+
+[[race_pair.NAKAYAMA.pairs]]
+kaisu = "5"
+day = "1"
+
+[[race_pair.NAKAYAMA.pairs]]
+kaisu = "5"
+day = "2"
+
+[data]
+columns = [
+    '日付',
+    'レースID',
+    'レース名',
+    '競馬場',
+    '出走頭数',
+    '着順',
+    '枠番',
+    '馬番',
+    '馬名',
+    '性齢',
+    '斤量',
+    '騎手',
+    'タイム',
+    '着差',
+    '単勝',
+    'コーナー通過順',
+    '脚質',
+    '人気',
+    '馬体重',
+    '増減',
+    '調教師',
+    '距離',
+    'タイプ',
+    '状態',
+    'クラス',
+    '発走時刻',
+    '気温',
+    '馬ID',
+    '騎手ID',
+    '調教師ID',
+    '調教タイム',
+    '調教評価',
+    '調教コース',
+    '調教指数',
+    '同コース同距離1着',
+    '同コース同距離2着',
+    '同コース同距離3着',
+    '同コース同距離着外',
+    '同距離1着',
+    '同距離2着',
+    '同距離3着',
+    '同距離着外',
+    '短距離1着',
+    '短距離2着',
+    '短距離3着',
+    '短距離着外',
+    '長距離1着',
+    '長距離2着',
+    '長距離3着',
+    '長距離着外',
+    '同コース同距離実績指数',
+    '同距離指数',
+    '短距離指数',
+    '長距離指数',
+    'タイム指数MAX',
+    'タイム指数平均',
+    'タイム指数距離MAX',
+    'タイム指数コースMAX',
+    '調子偏差値',
+    '種牡馬ID',
+    '種牡馬名',
+    '種牡馬指数',
+    '母父ID',
+    '母父名',
+    '母父指数',
+    '血統指数',
+    '生産者ID',
+    '生産者名',
+    '生産者指数',
+    '気候適性'
+]
+
+
+# 説明変数
+[features]
+features_1 = [
+    'actual_weight',            # 実重量
+    'declared_horse_weight',    # 馬体重
+    'updown',                   # 増減
+    'draw',                     # 枠番
+    'track',                    # コースタイプ
+    'jockey_ave_rank',          # 騎手平均順位
+    'trainer_ave_rank',         # 調教師平均順位
+    'recent_ave_rank',          # 最新nレース平均順位
+    'race_distance',            # レース距離
+    'training_point',           # 調教タイム
+    'ped_point',                # 血統指数
+    'breeder_point',            # 生産者指数
+    'climate',                  # 気候適性
+    'running_style'             # 脚質
+]
+
+features_2 = [
+    'actual_weight',            # 実重量
+    'declared_horse_weight',    # 馬体重
+    'updown',                   # 増減
+    'draw',                     # 枠番
+    'CC_CD_point',              # 対象競馬場の同距離レース実績
+    'CD_point',                 # 同距離レース実績
+    'SD_point',                 # 短距離レース実績
+    'LD_point',                 # 長距離レース実績
+    'training_point',           # 調教タイム
+    'climate',                  # 気候適性
+    'running_style'             # 脚質
+]
+
+features_3 = [
+    'CC_CD_point',              # 対象競馬場の同距離レース実績
+    'CD_point',                 # 同距離レース実績
+    'training_point',           # 調教タイム
+]
+
+features_4 = [
+    'timeindex_ave_nor',        # スピード指数５レース平均（正規化）
+    'condition_deviation_nor',  # 調子偏差値（正規化）
+]
+
+
+[app]
+timeout = 10
+time_list = [
+    #    '0920', '0955', '1030', '1100', '1150', '1225', '1250', '1330', '1400', '1435', '1515', '1545']
+         '0940', '1010', '1030', '1100', '1150', '1230', '1255', '1330', '1400', '1435', '1515', '1545']
+
+
+[netkeiba]
+base_url = "https://www.netkeiba.com/"
+user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
