@@ -2,29 +2,39 @@
 # 処理内容：学習モデルを作成
 # 作成日：2022/9/12
 #
-import M_common
 import joblib
 import pandas as pd
 import numpy as np
 from sklearn.svm import SVR
-from sklearn import svm
+import tomli
+import os
+# from sklearn import svm
 from sklearn.ensemble import GradientBoostingRegressor
-from sklearn import linear_model
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import LabelEncoder
+# from sklearn import linear_model
+# from sklearn.ensemble import RandomForestClassifier
+# from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPClassifier
 from sklearn.linear_model import LogisticRegression
 import datetime
 
+# settings.toml を読み込む
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CONFIG_PATH = os.path.join(BASE_DIR, "settings.toml")
+with open(CONFIG_PATH, "rb") as f:
+    _config = tomli.load(f)
+
+
 ###########################################################################
 # 学習モデル作成
 ###########################################################################
 def get_models(mdl):
+    model = None
+
     # 学習データの読み込み
     df_train = pd.read_csv('data/training.csv',
                            dtype={'popular': 'str', 'race_class': 'str', 'breeder_id': 'str'})
-    features = M_common.features_1
+    features = _config["features"]["features_1"]
     X_train = np.array(df_train[features])
 
     # タイム（ラベル）を設定
@@ -38,8 +48,8 @@ def get_models(mdl):
     print(mdl + "学習中...")
     # サポートベクターマシーン
     if mdl == 'svr':
-        model = SVR(kernel='rbf', C = 5000, epsilon=0.01, gamma= 0.000001)
-        #model = SVR(class_weight='balanced', kernel='rbf', C=15000, gamma=0.000001)
+        model = SVR(kernel='rbf', C=5000, epsilon=0.01, gamma=0.000001)
+        # model = SVR(class_weight='balanced', kernel='rbf', C=15000, gamma=0.000001)
         model.fit(X_train, y_train)
     # 勾配ブースティング回帰ツリーモデル
     elif mdl == 'gbrt':
@@ -58,12 +68,12 @@ def get_models(mdl):
 
         # サポートベクターマシーン（標準化）
         if mdl == 's_svr':
-            #model = SVR(kernel='rbf', C=1000, epsilon=0.01, gamma=0.0001)
+            # model = SVR(kernel='rbf', C=1000, epsilon=0.01, gamma=0.0001)
             model = SVR(kernel='rbf', C=15000, epsilon=0.01, gamma=0.000001)
             model.fit(X_train_std, y_train_std)
         # 勾配ブースティング回帰ツリーモデル（標準化）
         elif mdl == 's_gbrt':
-            #model = GradientBoostingRegressor(loss='ls', learning_rate=0.05, n_estimators=120, max_depth=5,
+            # model = GradientBoostingRegressor(loss='ls', learning_rate=0.05, n_estimators=120, max_depth=5,
             #                nn                       random_state=42)
             model = GradientBoostingRegressor(loss='ls', learning_rate=0.2, n_estimators=100, max_depth=10,
                                               random_state=42)
@@ -72,30 +82,32 @@ def get_models(mdl):
 
     joblib.dump(model, 'models/' + mdl + '_model.pkl')
 
+
 ###########################################################################
 # 学習モデル作成 (2023.5.16ver)
 ###########################################################################
 def get_models2(mdl):
+    model = None
     # 学習データの読み込み
     df_train = pd.read_csv('data/training.csv',
                            dtype={'popular': 'str', 'race_class': 'str', 'breeder_id': 'str'})
-    # features = M_common.features_1
-    # features = M_common.features_2
-    # features = M_common.features_3
-    features = M_common.features_4
+    # features = _config["features"]["features_1"]
+    # features = _config["features"]["features_2"]
+    # features = _config["features"]["features_3"]
+    features = _config["features"]["features_4"]
     X_train = np.array(df_train[features])
 
     # ラベルを設定
-    #Ytrain_HorseWin = df_train['horse_win'].ravel()
+    # Ytrain_HorseWin = df_train['horse_win'].ravel()
     Ytrain_HorseRankTop3 = df_train['horse_rank_top_3'].ravel()
     y_train = Ytrain_HorseRankTop3
-    #y_train = Ytrain_HorseWin
+    # y_train = Ytrain_HorseWin
 
     print(mdl + "学習中...")
     # サポートベクターマシーン
     if mdl == 'svr':
-        model = SVR(kernel='rbf', C = 5000, epsilon=0.01, gamma= 0.000001)
-        #model = SVR(class_weight='balanced', kernel='rbf', C=15000, gamma=0.000001)
+        model = SVR(kernel='rbf', C=5000, epsilon=0.01, gamma=0.000001)
+        # model = SVR(class_weight='balanced', kernel='rbf', C=15000, gamma=0.000001)
         model.fit(X_train, y_train)
     # 勾配ブースティング回帰ツリーモデル
     elif mdl == 'gbrt':
@@ -129,13 +141,13 @@ def get_models2(mdl):
 
         # サポートベクターマシーン（標準化）
         if mdl == 's_svr':
-            #model = SVR(kernel='rbf', C=1000, epsilon=0.01, gamma=0.0001)
+            # model = SVR(kernel='rbf', C=1000, epsilon=0.01, gamma=0.0001)
             model = SVR(kernel='rbf', C=15000, epsilon=0.01, gamma=0.000001)
-            #model = svm.SVC(class_weight='balanced', kernel='rbf', C=15000, gamma=0.000001)
+            # model = svm.SVC(class_weight='balanced', kernel='rbf', C=15000, gamma=0.000001)
             model.fit(X_train_std, y_train)
         # 勾配ブースティング回帰ツリーモデル（標準化）
         elif mdl == 's_gbrt':
-            #model = GradientBoostingRegressor(loss='ls', learning_rate=0.05, n_estimators=120, max_depth=5,
+            # model = GradientBoostingRegressor(loss='ls', learning_rate=0.05, n_estimators=120, max_depth=5,
             #                nn                       random_state=42)
             model = GradientBoostingRegressor(loss='ls', learning_rate=0.2, n_estimators=100, max_depth=10,
                                               random_state=42)
@@ -151,16 +163,18 @@ def get_models2(mdl):
 ###########################################################################
 # メイン処理
 ###########################################################################
-# print('説明変数:',M_common.features_1)
-# print('説明変数:',M_common.features_2)
-# print('説明変数:',M_common.features_3)
-print('説明変数:',M_common.features_4)
-t0 = datetime.datetime.now()
-get_models2('LR')
-#get_models2('s_gbrt')
-#get_models2('s_svr')
-#get_models2('s_mlp')
-t1 = datetime.datetime.now() - t0
-print('=> 計測結果：',t1)
-#get_models('s_gbrt')
-print("完了！")
+def main():
+    print('説明変数:', _config["features"]["features_4"])
+    t0 = datetime.datetime.now()
+    get_models2('LR')
+    # get_models2('s_gbrt')
+    # get_models2('s_svr')
+    # get_models2('s_mlp')
+    t1 = datetime.datetime.now() - t0
+    print('=> 計測結果：', t1)
+    # get_models('s_gbrt')
+    print("完了！")
+
+
+if __name__ == '__main__':
+    main()
