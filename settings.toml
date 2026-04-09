@@ -156,7 +156,7 @@ features_3 = [
 ]
 
 features_4 = [
-    'timeindex_ave_nor',        # スピード指数５レース平均（正規化）
+    'time_index_ave_nor',        # スピード指数５レース平均（正規化）
     'condition_deviation_nor',  # 調子偏差値（正規化）
 ]
 
