@@ -321,7 +321,9 @@ def main():
     YEAR = t_start.year
 
     # レースIDリスト作成
-    id_list = M_common.get_target_race_id_list(YEAR, YEAR)
+    id_list = []
+    for place in M_common.PLACES:
+        id_list.append(M_common.get_target_race_id_list(YEAR, YEAR))
 
     # 各レースの馬体重取得時刻
     time_list = _config["app"]["time_list"]
