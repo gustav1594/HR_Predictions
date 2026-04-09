@@ -51,10 +51,9 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(BASE_DIR, "settings.toml")
 with open(CONFIG_PATH, "rb") as f:
     _config = tomli.load(f)
-
+global WEIGHT_FLAG    # 馬体重の取得有無（0:なし 1:あり）
 
 # 定義値
-WEIGHT_FLAG = 0         # 馬体重の取得有無（0:なし 1:あり）
 DEFAULT_TIME = 67.0     # 調教タイム（デフォルト値）
 DEFAULT_POINT = 7.0     # 血統指数（デフォルト値）
 DEFAULT_TIMEINDEX = 70  # スピード指数（デフォルト値）
@@ -1346,4 +1345,5 @@ def main():
 
 if __name__ == '__main__':
     initialize_netkeiba()
+    WEIGHT_FLAG = 0 
     main()
