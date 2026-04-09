@@ -114,7 +114,7 @@ def initialize_netkeiba():
 # ログイン
 ###########################################################################
 def login_netkeiba(login_driver):
-    user_id = os.environ.get("USER")
+    user_id = os.environ.get("USER_ID")
     password = os.environ.get("PASS")
     # login_info = os.environ.get("login_info")
     url_login = 'https://regist.netkeiba.com/account/?pid=login&action=auth'
